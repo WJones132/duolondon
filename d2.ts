@@ -1,13 +1,14 @@
 class Vertex {
     name: string;
     line: string[];
+    zone: string;
 }
 
 export class Graph {
     private adjacencyList: Map<string, Map<string, number>>;
 
     /*
-    string: {
+    name: {
         string: number
         string: [
             string
