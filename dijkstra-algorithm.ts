@@ -1,111 +1,127 @@
-class NodeVertex {
-    nameOfVertex: string = '';
-    weight: number = 0;
+import { stations } from './stations'
+
+export class Station {
+    name: string = '';
+    lines: string[] = [];
 }
 
-export class Vertex {
-    name: string;
-    nodes: NodeVertex[];
-    weight: number;
+export class Line {
+    name: string = '';
+    colour: string = '';
+}
 
-    constructor(theName: string, theNodes: NodeVertex[], theWeight: number) {
-        this.name = theName;
-        this.nodes = theNodes;
-        this.weight = theWeight;
+export class Graph {
+    private adjacencyList: Map<string, any>;
+    // private adjacencyList: { [name: string]: { weight: number, lines: string[] } };
+
+    /*
+    station: {
+        weight: number
+        line: [
+            string
+        ]
     }
-}
-
-export class Dijkstra {
-
-    vertices: any;
+    */
 
     constructor() {
-        this.vertices = {};
+        this.adjacencyList = new Map();
     }
 
-    addVertex(vertex: Vertex): void {
-        this.vertices[vertex.name] = vertex;
+    addStation(vertex: Station) {
+        if (!this.adjacencyList.has(vertex.name)) {
+            this.adjacencyList.set(vertex.name, new Map());
+            this.adjacencyList.get(vertex.name)!.set('line', vertex.lines)
+        }
     }
 
-    findPointsOfShortestWay(start: string, finish: string, weight: number): string[] {
+    addEdge(vertex1: Station, vertex2: Station, weight: number) {
+        this.addStation(vertex1);
+        this.addStation(vertex2);
+        this.adjacencyList.get(vertex1.name)!.set(vertex2.name, weight);
+        this.adjacencyList.get(vertex2.name)!.set(vertex1.name, weight);
+    }
 
-        let nextVertex: string = finish;
-        let arrayWithVertex: string[] = [];
-        while (nextVertex !== start) {
+    dijkstra(startStation: string, endStation: string) {
+        const distances: Map<string, number> = new Map();
+        const previous: Map<string, string | null> = new Map();
+        const visited: Set<string> = new Set();
 
-            let minWeigth: number = Number.MAX_VALUE;
-            let minVertex: string = "";
-            for (let i of this.vertices[nextVertex].nodes) {
-                if (i.weight + this.vertices[i.nameOfVertex].weight < minWeigth) {
-                    minWeigth = this.vertices[i.nameOfVertex].weight;
-                    minVertex = i.nameOfVertex;
+        for (const vertex of this.adjacencyList.keys()) {
+            distances.set(vertex, vertex === startStation ? 0 : Infinity);
+            previous.set(vertex, null);
+        }
+
+        let currentStation = startStation;
+
+        while (currentStation !== endStation) {
+            const neighbors = this.adjacencyList.get(currentStation);
+
+            if (!neighbors) break;
+
+            for (const neighbor of neighbors.keys()) {
+                if (!visited.has(neighbor)) {
+                    const candidate = distances.get(currentStation)! + neighbors.get(neighbor)!;
+
+                    if (candidate < distances.get(neighbor)!) {
+                        distances.set(neighbor, candidate);
+                        previous.set(neighbor, currentStation);
+                    }
                 }
             }
-            arrayWithVertex.push(minVertex);
-            nextVertex = minVertex;
+
+            visited.add(currentStation);
+
+            let unvisitedVertices: [string, number][] = Array.from(distances.entries())
+                .filter(([vertex]) => !visited.has(vertex));
+
+            if (unvisitedVertices.length === 0) break;
+
+            unvisitedVertices = unvisitedVertices.sort((a, b) => a[1] - b[1]);
+
+            currentStation = unvisitedVertices[0][0];
         }
-        return arrayWithVertex;
+
+        const path: string[] = [];
+        const linesUsed: string[] = [];
+
+        if (currentStation === null || currentStation === undefined) {
+            return {
+                path: ['No available path to end vertex'],
+                distance: Infinity
+            }; // No path to endStation
+        }
+
+        while (currentStation) {
+            path.unshift(currentStation);
+            linesUsed.unshift()
+            currentStation = previous.get(currentStation)!;
+        }
+
+        if (path[0] === startStation) {
+            return {
+                path,
+                distance: distances.get(endStation),
+                lines: linesUsed
+            };
+        } else {
+            return {
+                path: [],
+                distance: Infinity
+            };
+        }
     }
-
-
-    findShortestWay(start: string, finish: string): string[] {
-        const vertices = this.vertices;
-        
-        const distance = {};
-        const visited = {};
-        const previous = {};
-    
-        // Initialize distances, visited flags, and previous vertices
-        for (let vertex of vertices) {
-            distance[vertex.name] = vertex.name === start ? 0 : Infinity;
-            visited[vertex.name] = false;
-            previous[vertex.name] = null;
-        }
-    
-        // Continue until all vertices have been visited
-        while (true) {
-            let minDistance = Infinity;
-            let currentVertex: boolean = false;
-    
-            // Find the unvisited vertex with the smallest distance
-            for (let vertex of vertices) {
-                if (!visited[vertex.name] && distance[vertex.name] < minDistance) {
-                    currentVertex = vertex.name;
-                    minDistance = distance[vertex.name];
-                }
-            }
-    
-            if (currentVertex === null) {
-                break; // All remaining vertices are unreachable
-            }
-    
-            visited[currentVertex] = true;
-    
-            // Update distances to neighbors
-            for (let neighbor of this.vertices[currentVertex].nodes) {
-                const calculateWeight = distance[currentVertex] + neighbor.weight;
-                if (calculateWeight < distance[neighbor.nameOfVertex]) {
-                    distance[neighbor.nameOfVertex] = calculateWeight;
-                    previous[neighbor.nameOfVertex] = currentVertex;
-                }
-            }
-        }
-    
-        // Reconstruct the shortest path
-        if (distance[finish] === Infinity) {
-            return []; // No path found
-        }
-    
-        const shortestPath = [];
-        let current: string = finish;
-        while (current !== null) {
-            shortestPath.unshift(current);
-            current = previous[current];
-        }
-        shortestPath.push(distance[finish].toString());
-    
-        return shortestPath;
-    }
-    
-
 }
+
+export const graph = new Graph();
+
+graph.addEdge(stations.get('Bond')!, stations.get('Oxford')!, 3) // bond to oxford
+graph.addEdge(stations.get('Bond')!, stations.get('Green')!, 3) // bond to green
+graph.addEdge(stations.get('Covent')!, stations.get('Leicester')!, 6) // covent to leicester
+graph.addEdge(stations.get('Covent')!, stations.get('Holborn')!, 14) // covent to holborn
+graph.addEdge(stations.get('Oxford')!, stations.get('Green')!, 4) // oxford to green
+graph.addEdge(stations.get('Oxford')!, stations.get('Picadilly')!, 4) // oxford to piccadilly
+graph.addEdge(stations.get('Oxford')!, stations.get('Tottenham CR')!, 6) // oxford to tottenham
+graph.addEdge(stations.get('Picadilly')!, stations.get('Green')!, 4) // piccadilly to green
+graph.addEdge(stations.get('Picadilly')!, stations.get('Leicester')!, 6) // piccadilly to leicester
+graph.addEdge(stations.get('Tottenham CR')!, stations.get('Leicester')!, 4) // tottenham to leicester
+graph.addEdge(stations.get('Tottenham CR')!, stations.get('Holborn')!, 10) // tottenham to holborn
