@@ -3,27 +3,54 @@ import { lines } from './lines';
 import { Line, Station } from './dijkstra-algorithm'
 import * as readline from 'readline';
 
-const maxStations = stations.size;
-
 export const questions: Function[] = [
     stationBetweenStations,
     connectingStationsOnDifferentLines,
+    lineOnBothStations,
     lineAtStation,
     colourOfLine
 ]
 
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
+
 function getRandomStation(): Station {
-    const values = [...stations.values()]
-    return values[Math.floor(Math.random() * values.length)]
+    const stationsValues = [...stations.values()]
+    return stationsValues[Math.floor(Math.random() * stationsValues.length)]
 }
 
 function getRandomLine(): Line {
-    const num = Math.floor(Math.random() * lines.length)
-    return lines[num];
+    const lineValues = [...lines.values()]
+    return lineValues[Math.floor(Math.random() * lineValues.length)];
 }
 
 // station between stations
-function stationBetweenStations() { 
+function stationBetweenStations() {
+    // get random line
+    // filter stations on that line
+    // 
+
+    const line: Line = getRandomLine();
+    const stationsValues = [...stations.values()]
+
+    const st = stations.get('Bond')
+    const fi = st?.lines.filter((li) => li === line.name);
+
+    console.log(fi);
+
+
+    // const stationsOnLine = stationsValues.reduce((ids, currentStation) => {
+    //     console.log(ids);
+    //     console.log(currentStation);
+
+    //     return 0
+    //     if (currentStation.lines.filter((l) => l === line.name)) {
+            
+    //     }
+
+    // }, [],);
 
 }
 
@@ -33,34 +60,62 @@ function connectingStationsOnDifferentLines() {
 
 }
 
+async function lineOnBothStations() {
+
+}
+
 
 // what line is at this station?
-function lineAtStation(): string[] {
+async function lineAtStation(): Promise<void> {
     const station: Station = getRandomStation();
-    return station.lines;
+    let query: string = `What line(s) are at ${station.name}? `;
+    let answer: string[] = [];
+
+    while (true) {
+        console.log(`Currently selected: ${answer}`)
+
+        const ans: Promise<string> = new Promise(resolve => rl.question(query, ans => { resolve(ans) }));
+        const awaited: string = await ans;
+
+        if (awaited === '') {
+            if (answer.sort().toString().toLowerCase() === station.lines.sort().toString().toLowerCase()) {
+                console.log('\nCorrect!');
+                break;
+            }
+
+            console.log('\nIncorrect.')
+            answer.splice(0, answer.length);
+            query = `What line(s) are at ${station.name}? `;
+            continue;
+        }
+
+        answer.push(awaited);
+        query = "Enter another station or leave blank to submit: ";
+
+    }
+    rl.close();
 }
 
 
 // what colour is this line?
-async function colourOfLine(): Promise<string> {
+async function colourOfLine(): Promise<void> {
     const line = getRandomLine();
-    const query: string = `What is the line colour of the ${line.name} line? `;
+    let query: string = `What is the line colour of the ${line.name} line? `;
 
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
+    // return new Promise(resolve => rl.question(query, ans => {
+    while (true) {
+        const ans: Promise<string> = new Promise(resolve => rl.question(query, ans => { resolve(ans) }));
+        const awaited: string = await ans;
 
-    return new Promise(resolve => rl.question(query, ans => {
-        if (ans.toLowerCase() === line.colour.toLowerCase()) {
+        if (awaited.toLowerCase() === line.colour.toLowerCase()) {
             console.log("Correct!");
+            break;
         }
-        else {
-            console.log("Incorrect!");
-        }
-        rl.close();
-        resolve(ans);
-    }))
+
+        console.log("Incorrect!");
+        query = 'Enter another answer: '
+    }
+    rl.close();
 }
 
 

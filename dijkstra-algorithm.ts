@@ -114,14 +114,23 @@ export class Graph {
 
 export const graph = new Graph();
 
-graph.addEdge(stations.get('Bond')!, stations.get('Oxford')!, 3) // bond to oxford
-graph.addEdge(stations.get('Bond')!, stations.get('Green')!, 3) // bond to green
-graph.addEdge(stations.get('Covent')!, stations.get('Leicester')!, 6) // covent to leicester
-graph.addEdge(stations.get('Covent')!, stations.get('Holborn')!, 14) // covent to holborn
-graph.addEdge(stations.get('Oxford')!, stations.get('Green')!, 4) // oxford to green
-graph.addEdge(stations.get('Oxford')!, stations.get('Picadilly')!, 4) // oxford to piccadilly
-graph.addEdge(stations.get('Oxford')!, stations.get('Tottenham CR')!, 6) // oxford to tottenham
-graph.addEdge(stations.get('Picadilly')!, stations.get('Green')!, 4) // piccadilly to green
+graph.addEdge(stations.get('Bond')!, stations.get('Oxford')!, 7) // bond to oxford
+graph.addEdge(stations.get('Bond')!, stations.get('Green')!, 14) // bond to green
+graph.addEdge(stations.get('Bond')!, stations.get('Tottenham CR')!, 12) // bond to tottenhamcr
+graph.addEdge(stations.get('Covent')!, stations.get('Leicester')!, 4) // covent to leicester
+graph.addEdge(stations.get('Covent')!, stations.get('Holborn')!, 8) // covent to holborn
+graph.addEdge(stations.get('Oxford')!, stations.get('Green')!, 15) // oxford to green
+graph.addEdge(stations.get('Oxford')!, stations.get('Picadilly')!, 12) // oxford to piccadilly
+graph.addEdge(stations.get('Oxford')!, stations.get('Tottenham CR')!, 9) // oxford to tottenham
+graph.addEdge(stations.get('Picadilly')!, stations.get('Green')!, 8) // piccadilly to green
 graph.addEdge(stations.get('Picadilly')!, stations.get('Leicester')!, 6) // piccadilly to leicester
-graph.addEdge(stations.get('Tottenham CR')!, stations.get('Leicester')!, 4) // tottenham to leicester
+graph.addEdge(stations.get('Tottenham CR')!, stations.get('Leicester')!, 8) // tottenham to leicester
 graph.addEdge(stations.get('Tottenham CR')!, stations.get('Holborn')!, 10) // tottenham to holborn
+graph.addEdge(stations.get('Charing')!, stations.get('Picadilly')!, 11) // charing to picadilly
+graph.addEdge(stations.get('Charing')!, stations.get('Leicester')!, 7) // charing to leicester
+graph.addEdge(stations.get('Embankment')!, stations.get('Charing')!, 3) // embankment to charing
+graph.addEdge(stations.get('Embankment')!, stations.get('Westminster')!, 10) // embankment to westminster
+graph.addEdge(stations.get('Westminster')!, stations.get('James')!, 11) // westminster to james
+graph.addEdge(stations.get('Westminster')!, stations.get('Green')!, 21) // westminster to green
+graph.addEdge(stations.get('James')!, stations.get('Victoria')!, 11) // james to victoria
+graph.addEdge(stations.get('Green')!, stations.get('Victoria')!, 19) // green to victoria
