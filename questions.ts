@@ -1,6 +1,7 @@
 import { stations } from './stations';
 import { lines } from './lines';
 import { Line, Station } from './dijkstra-algorithm'
+import { graph } from './dijkstra-algorithm'
 import * as readline from 'readline';
 
 export const questions: Function[] = [
@@ -27,27 +28,39 @@ function getRandomLine(): Line {
 }
 
 // station between stations
-function stationBetweenStations() {
+function stationBetweenStations(): void {
     // get random line
     // filter stations on that line
     // 
 
-    const line: Line = getRandomLine();
-    const stationsValues = [...stations.values()]
+    // const line: Line = getRandomLine();
+    const station: Station = stations.get('Leicester')! // getRandomStation();
+    console.log(station)
 
-    const st = stations.get('Bond')
-    const fi = st?.lines.filter((li) => li === line.name);
+    const twoAway = graph.findVerticesCountEdgesAway(station, 2);
 
-    console.log(fi);
+    console.log(twoAway)
+
+    for (let i = 0; i < station.lines.length; i++) {
+
+    }
+
+    // const stationsValues = [...stations.values()]
+
+    // const f = stationsValues.filter((li, index) => li.lines[index] === line.name);
+
+    // console.log(f);
+
+    // const fi = stationsValues.filter((li) => li === line.name);
+
+    // console.log(fi);
+
+    rl.close()
 
 
     // const stationsOnLine = stationsValues.reduce((ids, currentStation) => {
-    //     console.log(ids);
-    //     console.log(currentStation);
-
-    //     return 0
     //     if (currentStation.lines.filter((l) => l === line.name)) {
-            
+    //         return 
     //     }
 
     // }, [],);
@@ -72,25 +85,21 @@ async function lineAtStation(): Promise<void> {
     let answer: string[] = [];
 
     while (true) {
-        console.log(`Currently selected: ${answer}`)
-
         const ans: Promise<string> = new Promise(resolve => rl.question(query, ans => { resolve(ans) }));
         const awaited: string = await ans;
 
-        if (awaited === '') {
-            if (answer.sort().toString().toLowerCase() === station.lines.sort().toString().toLowerCase()) {
-                console.log('\nCorrect!');
-                break;
-            }
+        answer = awaited.toLowerCase().split(/[\s,]+/)
 
-            console.log('\nIncorrect.')
-            answer.splice(0, answer.length);
-            query = `What line(s) are at ${station.name}? `;
-            continue;
+        console.log(answer.sort().toString())
+
+        if (answer.sort().toString() === station.lines.sort().toString().toLowerCase()) {
+            console.log('\nCorrect!');
+            break;
         }
 
-        answer.push(awaited);
-        query = "Enter another station or leave blank to submit: ";
+        console.log('\nIncorrect.')
+        answer.splice(0, answer.length);
+        continue;
 
     }
     rl.close();

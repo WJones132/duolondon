@@ -2,7 +2,7 @@ import { stations } from './stations'
 
 export class Station {
     name: string = '';
-    lines: string[] = [];
+    lines: Line[] = [];
 }
 
 export class Line {
@@ -12,25 +12,17 @@ export class Line {
 
 export class Graph {
     private adjacencyList: Map<string, any>;
-    // private adjacencyList: { [name: string]: { weight: number, lines: string[] } };
-
-    /*
-    station: {
-        weight: number
-        line: [
-            string
-        ]
-    }
-    */
+    private vertices: Map<string, Station>;
 
     constructor() {
         this.adjacencyList = new Map();
+        this.vertices = new Map();
     }
 
     addStation(vertex: Station) {
         if (!this.adjacencyList.has(vertex.name)) {
             this.adjacencyList.set(vertex.name, new Map());
-            this.adjacencyList.get(vertex.name)!.set('line', vertex.lines)
+            this.vertices.set(vertex.name, vertex)
         }
     }
 
@@ -41,19 +33,62 @@ export class Graph {
         this.adjacencyList.get(vertex2.name)!.set(vertex1.name, weight);
     }
 
-    dijkstra(startStation: string, endStation: string) {
+    findVerticesCountEdgesAway(startVertex: Station, count: number): Station[] {
+        const countEdgesAway: Station[] = [];
+        const visited: Set<string> = new Set();
+
+        const queue: { vertex: Station; distance: number }[] = [{ vertex: startVertex, distance: 0 }];
+        const vertexLines: string[] = startVertex.lines.reduce((vertexLines: string[], currentStation: Line) => {
+            vertexLines.push(currentStation.name);
+            return vertexLines;
+        }, []);
+
+        while (queue.length > 0) {
+            const { vertex, distance } = queue.shift()!;
+
+            if (distance === count) {
+                countEdgesAway.push(vertex);
+                continue;
+            }
+
+            visited.add(vertex.name);
+
+            const neighbors = this.adjacencyList.get(vertex.name);
+
+            if (!neighbors) continue;
+
+            for (const neighborName of neighbors.keys()) {
+                const neighbor = this.vertices.get(neighborName);
+
+                if (neighbor && !visited.has(neighbor.name)) {
+
+                    // if neighbour and vertex are on same line
+                    for (let i = 0; i < neighbor.lines.length; i++) {
+                        if ((vertexLines.includes(neighbor.lines[i].name))) {
+                            queue.push({ vertex: neighbor, distance: distance + 1 });
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return [...new Set(countEdgesAway)];
+    }
+
+    dijkstra(startStation: Station, endStation: Station): { path: Station[] | string[], distance: number } {
         const distances: Map<string, number> = new Map();
         const previous: Map<string, string | null> = new Map();
         const visited: Set<string> = new Set();
 
         for (const vertex of this.adjacencyList.keys()) {
-            distances.set(vertex, vertex === startStation ? 0 : Infinity);
+            distances.set(vertex, vertex === startStation.name ? 0 : Infinity);
             previous.set(vertex, null);
         }
 
-        let currentStation = startStation;
+        let currentStation = startStation.name;
 
-        while (currentStation !== endStation) {
+        while (currentStation !== endStation.name) {
             const neighbors = this.adjacencyList.get(currentStation);
 
             if (!neighbors) break;
@@ -81,8 +116,8 @@ export class Graph {
             currentStation = unvisitedVertices[0][0];
         }
 
-        const path: string[] = [];
-        const linesUsed: string[] = [];
+        const path: Station[] = [];
+        const linesUsed: Line[] = [];
 
         if (currentStation === null || currentStation === undefined) {
             return {
@@ -92,16 +127,18 @@ export class Graph {
         }
 
         while (currentStation) {
-            path.unshift(currentStation);
-            linesUsed.unshift()
+            path.unshift(this.vertices.get(currentStation)!);
+            // linesUsed.unshift()
             currentStation = previous.get(currentStation)!;
         }
 
-        if (path[0] === startStation) {
+        console.log(path)
+
+        if (path[0].name === startStation.name) {
             return {
                 path,
-                distance: distances.get(endStation),
-                lines: linesUsed
+                distance: distances.get(endStation.name)!,
+                // lines: linesUsed
             };
         } else {
             return {
